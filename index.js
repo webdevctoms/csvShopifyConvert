@@ -8,54 +8,59 @@ function formatString(fileString){
 
 function splitArray(newlineArray){
 	let returnArray = [];
-
+	//this is the array of each item in the line
 	let chunkArray = [];
 	let chunkStr = "";
 	let quoteFound = false;
-	let secondQuoteFound = false;
-	for(let i = 0; i < newlineArray.length;i++){
-		let character = newlineArray.charAt(i)
-		if(character === '"'){
-			quoteFound = true;
-		}
-
-		if(character === '"' && quoteFound){
-			try{
-				//this is finding a actual quote
-				if(newlineArray.charAt(i+1) === '"'){
-					chunkStr += character;
-					continue;
-				}
-				else if(newlineArray.charAt(i+1) === "," && newlineArray.charAt(i -1) === '"'){
-					chunkStr += character;
-					continue;
-				}
-				//this should be the end quote
-				else if(newlineArray.charAt(i+1) === ","){
-					chunkArray.push(chunkStr);
-					chunkStr = "";
-					quoteFound = false;
-					i++;
-					continue;
-				}
-
+	for(let k = 0; k < newlineArray.length; k++){
+		chunkArray = [];
+		chunkStr = "";
+		quoteFound = false;
+		for(let i = 0; i < newlineArray[k].length;i++){
+			let character = newlineArray[k].charAt(i)
+			if(character === '"'){
+				quoteFound = true;
 			}
-			catch(err){
-				console.log(err);
+
+			if(character === '"' && quoteFound){
+				try{
+					//this is finding a actual quote
+					if(newlineArray[k].charAt(i+1) === '"'){
+						chunkStr += character;
+						continue;
+					}
+					else if(newlineArray[k].charAt(i+1) === "," && newlineArray[k].charAt(i -1) === '"'){
+						chunkStr += character;
+						continue;
+					}
+					//this should be the end quote
+					else if(newlineArray[k].charAt(i+1) === ","){
+						chunkArray.push(chunkStr);
+						chunkStr = "";
+						quoteFound = false;
+						i++;
+						continue;
+					}
+
+				}
+				catch(err){
+					console.log(err);
+				}
 			}
+
+			if(character === "," && !quoteFound || i === newlineArray[k].length - 1){
+				chunkArray.push(chunkStr);
+				chunkStr = "";
+				continue;
+			}
+
+			chunkStr += character;
+			//console.log(newlineArray.charAt(i));
 		}
 
-		if(character === "," && !quoteFound){
-			chunkArray.push(chunkStr);
-			chunkStr = "";
-			continue;
-		}
-
-		chunkStr += character;
-		//console.log(newlineArray.charAt(i));
+		returnArray.push(chunkArray);
 	}
-
-	returnArray.push(chunkArray);
+	console.log("done splitting");
 	console.log(returnArray);
 	return returnArray;
 }
@@ -72,7 +77,7 @@ function readFile(files) {
     	fileArrayByNewLines.pop();
     	console.log(fileArrayByNewLines); 
     	//console.log(fileArrayByNewLines[5021].split(","));   
-    	splitArray(fileArrayByNewLines[5021]);
+    	splitArray(fileArrayByNewLines);
     	formatString(fileString);     
     }
     reader.readAsText(file)
