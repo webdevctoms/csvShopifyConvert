@@ -8,20 +8,25 @@
     <script type="text/javascript" src="tests.js"></script>
     <script type="text/javascript" src="filterBy.js"></script>
     <script type="text/javascript" src="index.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
 	<form>
 		<div>
 			<label for="inputFile">Item Codes to filter by</label>
 		</div>
-		<input type="file" id="itemCodes" accepts=".csv" />
 		<div>
+		<input type="file" id="itemCodes" accepts=".csv" />
+		</div>
 		<div>
 			<label for="inputFile">Enter CSV File</label>
 		</div>
-		<input type="file" id="inputFile" accepts=".csv" />
+		<div>
+			<input type="file" id="inputFile" accepts=".csv" />
+		</div>
 		<div>
 			<button id="jsSubmit">Submit</button>
+			<button id="jsFilter">Filter & Submit</button>
 		</div>
 	</form>
 </body>
