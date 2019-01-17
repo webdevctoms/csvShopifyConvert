@@ -6,22 +6,15 @@ function formatString(fileString){
 	//console.log(fileArray[24].trim());
 }
 
-function verifyLength(splitArr){
-	let linesFound = []
-	for(let i = 0;i < splitArr.length;i++){
-		if(splitArr[i].length != 8){
-			console.log("found short array, index: ",i);
-			linesFound.push(splitArr[i]);
+function removeForPurchase(splitArr){
+	let newArr = [];
+	for(let i = 0;i < splitArr.length; i++){
+		if(splitArr[i][2] === "For Purchase"){
+			continue;
 		}
+		newArr.push(splitArr[i]);
 	}
-	console.log("test done");
-	if(linesFound.length === 0){
-		console.log("All data correct");
-	}
-}
-
-function removeForPurchase(){
-	
+	return newArr;
 }
 
 function addBlank(splitArr){
@@ -101,21 +94,24 @@ function splitArray(newlineArray){
 }
 
 function readFile(files) {
-    //var files = evt.target.files;
-    //console.log(files);
+
     var file = files[0];           
     var reader = new FileReader();
     reader.onload = function(event) {
-    	//console.log(event.target.result);
+
     	let fileString = event.target.result; 
     	let fileArrayByNewLines = fileString.split("\n");
     	fileArrayByNewLines.pop();
     	console.log(fileArrayByNewLines); 
-    	//console.log(fileArrayByNewLines[5021].split(","));   
+ 
     	let commaSplitArray = splitArray(fileArrayByNewLines);
     	addBlank(commaSplitArray);
     	verifyLength(commaSplitArray);
-    	console.log(commaSplitArray);
+
+    	let removedSplitArray = removeForPurchase(commaSplitArray);
+    	verifyForPurchaseRemoved(removedSplitArray);
+    	console.log(removedSplitArray);
+
     	formatString(fileString);     
     }
     reader.readAsText(file)
