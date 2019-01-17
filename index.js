@@ -6,6 +6,32 @@ function formatString(fileString){
 	//console.log(fileArray[24].trim());
 }
 
+function verifyLength(splitArr){
+	let linesFound = []
+	for(let i = 0;i < splitArr.length;i++){
+		if(splitArr[i].length != 8){
+			console.log("found short array, index: ",i);
+			linesFound.push(splitArr[i]);
+		}
+	}
+	console.log("test done");
+	if(linesFound.length === 0){
+		console.log("All data correct");
+	}
+}
+
+function removeForPurchase(){
+	
+}
+
+function addBlank(splitArr){
+	for(let i =0;i < splitArr.length; i++){
+		if(splitArr[i].length === 7){
+			splitArr[i].push("");
+		}
+	}
+}
+
 function splitArray(newlineArray){
 	let returnArray = [];
 	//this is the array of each item in the line
@@ -29,6 +55,15 @@ function splitArray(newlineArray){
 						chunkStr += character;
 						continue;
 					}
+					//this should be the end when " is at the end of column
+					else if(newlineArray[k].charAt(i-1) === '"' && newlineArray[k].charAt(i-2) === '"'  ){
+						chunkArray.push(chunkStr);
+						chunkStr = "";
+						quoteFound = false;
+						i++;
+						continue;
+					}
+					//this will catch  quotes beside a inside comma
 					else if(newlineArray[k].charAt(i+1) === "," && newlineArray[k].charAt(i -1) === '"'){
 						chunkStr += character;
 						continue;
@@ -61,7 +96,7 @@ function splitArray(newlineArray){
 		returnArray.push(chunkArray);
 	}
 	console.log("done splitting");
-	console.log(returnArray);
+	//console.log(returnArray);
 	return returnArray;
 }
 
@@ -77,7 +112,10 @@ function readFile(files) {
     	fileArrayByNewLines.pop();
     	console.log(fileArrayByNewLines); 
     	//console.log(fileArrayByNewLines[5021].split(","));   
-    	splitArray(fileArrayByNewLines);
+    	let commaSplitArray = splitArray(fileArrayByNewLines);
+    	addBlank(commaSplitArray);
+    	verifyLength(commaSplitArray);
+    	console.log(commaSplitArray);
     	formatString(fileString);     
     }
     reader.readAsText(file)
