@@ -15,7 +15,7 @@ function verifyLength(splitArr){
 function verifyForPurchaseRemoved(splitArr){
 	let linesFound = [];
 	for(let i = 0;i < splitArr.length;i++){
-		if(splitArr[i][2] === "For Purchase"){
+		if(splitArr[i][2] === "For Purchase" || splitArr[i][2] === "For Sale" || splitArr[i][2] === "For Resale"){
 			console.log("found for purchase index: ",i);
 			linesFound.push(splitArr[i]);
 		}
@@ -24,4 +24,12 @@ function verifyForPurchaseRemoved(splitArr){
 	if(linesFound.length === 0){
 		console.log("All data correct");
 	}
+}
+
+function checkItemCodesLength(itemCodesObject){
+	let counter = 0;
+	for(let key in itemCodesObject){
+		counter++;
+	}
+	console.log("the length of the item code object is: ", counter);
 }

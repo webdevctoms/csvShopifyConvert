@@ -6,10 +6,16 @@
     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
     crossorigin="anonymous"></script>
     <script type="text/javascript" src="tests.js"></script>
+    <script type="text/javascript" src="filterBy.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
 	<form>
+		<div>
+			<label for="inputFile">Item Codes to filter by</label>
+		</div>
+		<input type="file" id="itemCodes" accepts=".csv" />
+		<div>
 		<div>
 			<label for="inputFile">Enter CSV File</label>
 		</div>

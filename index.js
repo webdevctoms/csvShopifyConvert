@@ -1,4 +1,6 @@
-
+let netsuiteToShopify = {
+	//Name:
+};
 
 function formatString(fileString){	
 	let fileArray = fileString.split(",");
@@ -9,7 +11,7 @@ function formatString(fileString){
 function removeForPurchase(splitArr){
 	let newArr = [];
 	for(let i = 0;i < splitArr.length; i++){
-		if(splitArr[i][2] === "For Purchase"){
+		if(splitArr[i][2] === "For Purchase" || splitArr[i][2] === "For Sale" || splitArr[i][2] === "For Resale" ){
 			continue;
 		}
 		newArr.push(splitArr[i]);
@@ -101,6 +103,7 @@ function readFile(files) {
 
     	let fileString = event.target.result; 
     	let fileArrayByNewLines = fileString.split("\n");
+    	//just need to remember to put new line at the end of the array
     	fileArrayByNewLines.pop();
     	console.log(fileArrayByNewLines); 
  
