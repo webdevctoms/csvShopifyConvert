@@ -5,10 +5,11 @@
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"
     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
     crossorigin="anonymous"></script>
-    <script type="text/javascript" src="tests.js"></script>
-    <script type="text/javascript" src="filterBy.js"></script>
-    <script type="text/javascript" src="index.js"></script>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script type="text/javascript" src="js/tests.js"></script>
+    <script type="text/javascript" src="js/filterBy.js"></script>
+    <script type="text/javascript" src="js/templateCSV.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
 </head>
 <body>
 	<form>
@@ -17,6 +18,12 @@
 		</div>
 		<div>
 		<input type="file" id="itemCodes" accepts=".csv" />
+		</div>
+		<div>
+			<label for="inputFile">Template CSV File</label>
+		</div>
+		<div>
+		<input type="file" id="templateCSV" accepts=".csv" />
 		</div>
 		<div>
 			<label for="inputFile">Enter CSV File</label>

@@ -38,8 +38,9 @@ function readFileItemCodes(files) {
 
 function csvSelected(){
 	$("#itemCodes").change(function(event){
+		itemCodes = {};
 		let csvFile = $('#itemCodes').prop('files');
-		console.log(csvFile);
+		//console.log(csvFile);
 		readFileItemCodes(csvFile);
 	});
 }

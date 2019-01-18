@@ -1,6 +1,20 @@
 let netsuiteToShopify = {
-	//Name:
+	Title:1,
+	Vendor:5,
+	"Variant SKU":0,
+	"Metafields Global Description Tag":1,
+	"Variant Price":4,
+	"Image Src":7,
+	"Image Alt Text":1,
+	"Variant Weight":6
+
 };
+
+let netSuiteDataObjectArray = [];
+
+function convertToHandle(){
+	
+}
 
 function filterByItemCodes(splitArr){
 	let newArr = [];
@@ -146,17 +160,18 @@ function readFile(files, type) {
 
 	    	let removedSplitArray = removeForPurchase(commaSplitArray);
 	    	verifyForPurchaseRemoved(removedSplitArray);
-	    	console.log(removedSplitArray);
+	    	//console.log(removedSplitArray);
 
 	    	let filteredByItemCodesArray = filterByItemCodes(removedSplitArray); 
 	    	console.log(filteredByItemCodesArray);
+
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 
 	    	let fileArrayByNewLines = fileString.split("\n");
 	    	//just need to remember to put new line at the end of the array
 	    	fileArrayByNewLines.pop();
-	    	console.log(fileArrayByNewLines); 
+	    	//console.log(fileArrayByNewLines); 
 	 
 	    	let commaSplitArray = splitArray(fileArrayByNewLines);
 	    	addBlank(commaSplitArray);
@@ -194,6 +209,7 @@ function filterClicked(){
 }
 
 function initPage(){
+	//console.log(netsuiteToShopify["Variant SKU"]);
 	submitClicked();
 	filterClicked();
 }
