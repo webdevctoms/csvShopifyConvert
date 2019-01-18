@@ -42,18 +42,18 @@ function verifyHandles(handles){
 	for(let i = 0;i < handles.length;i++){
 		testHandle = legalChars.test(handles[i]);
 		if(!testHandle){
-			console.log("Handle incorrect index: ",i);
-			console.log("handle: ",handles[i]);
+			//console.log("Handle incorrect index: ",i);
+			//console.log("handle: ",handles[i]);
 			failedHandles.push(handles[i]);
 		}
 		if(handles[i].charAt(handles[i].length - 1) === "-"){
-			console.log("Handle incorrect index: ",i);
-			console.log("handle: ",handles[i]);
+			//console.log("Handle incorrect index: ",i);
+			//console.log("handle: ",handles[i]);
 			trailingHandles.push(i);
 		}
 	}
 	if(failedHandles.length > 0 || trailingHandles.length > 0){
-		console.log("Handle test Failed");
+		console.log("Handle test Failed: ", failedHandles,trailingHandles);
 	}
 	else{
 		console.log("handle test passed");

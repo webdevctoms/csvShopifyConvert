@@ -9,10 +9,119 @@ const netsuiteToShopify = {
 	"Variant Weight":6
 };
 let handleArray = [];
+//use this to see if split item code is variant and of what
+//with cry stuff might be best to just use description but need to remove ,
+let variantOptions = {
+	color:{
+		BK:"Black",
+		MC:"Multicam",
+		RG:"Ranger Green",
+		CB:"Coyote Brown",
+		OR:"Orange",
+		GR:"Grey",
+		GY:"Grey",
+		TN:"Tan",
+		WHT:"White",
+		MG:"Matte Grey",
+		OD:"Olive Drab",
+		SD:"Sand",
+		RD:"Red",
+		Black:"Black",
+		Grey:"Grey",
+		Olive:"Olive",
+		Sand:"Sand",
+		RGC:"Crye Ranger Green",
+		MCC:"Crye Multicam",
+		BKC:"Crye Black",
+		MAR:"Crye Multicam Arid",
+		MBK:"Crye Multicam Black",
+		MTR:"Crye Multicam Tropic",
+		KH:"Crye Khaki 400"
+
+	},
+	size:{
+		
+	},
+	"waist size":{
+		"28":"28",
+		"30":"30",
+		"32":"32",
+		"34":"34",
+		"36":"36",
+		"38":"38",
+		"40":"40",
+		"42":"42",
+		"44":"44",
+		"46":"46"
+	},
+	length:{
+		Short:"Short",
+		Regular:"Regular",
+		Long:"Long",
+		"X-Long": "X-Long"
+	}
+};
+//looking for 2digits and 2 letters or 1 digit and 3 letters
+let cryeConvertObject = {
+	"30L":"30-L",
+	"30R":"30-R",
+	"30S":"30-S",
+	//"30XL"
+};
+//when we grabbing info just skip these
+let skipType = {
+	DMM:"DMM"
+};
 //these are the columns that will possibly be added to in the shopify csv out of the possible 42
-const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37]
+const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37];
 
 let netSuiteDataObjectArray = [];
+
+function fixItemSubString(item,index){
+	let splitItem = item.split("");
+	splitItem.splice(index,0,"-");
+	return splitItem.join("");
+}
+
+function fixCryeItemCodes(splitArr){
+	//2 digits will represent waist size and 2 letters length of pant
+	//eg 28-xl or 28-l
+	const twoDigitPattern = /\d{2}[a-zA-Z]{2}|\d{2}[a-zA-Z]{1}/;
+	//these should be 2xl etc and the last digit should be length
+	//eg 2xl-r
+	const oneDigitPattern = /\d{1}[a-zA-Z]{3}/;
+	//these should be XL plus length
+	//eg xl-l
+	const threeLetterPattern = /[XLRS]{1}[XLRS]{1}[XLRS]{1}/;
+	for(let i = 0;i < splitArr.length;i++){
+
+		if(twoDigitPattern.test(splitArr[i][0])){
+			console.log("Found 2 digit match index: ",i);
+			let splitItemCode = splitArr[i][0].split("-");
+			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],2));
+			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],2);
+			console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-")
+
+		}
+		else if(oneDigitPattern.test(splitArr[i][0])){
+			console.log("Found 1 digit match index: ",i);
+			let splitItemCode = splitArr[i][0].split("-");
+			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],3));
+			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],3);
+			console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-")
+		}
+		else if(threeLetterPattern.test(splitArr[i][0])){
+			console.log("Found 3 letter match index: ",i);
+			let splitItemCode = splitArr[i][0].split("-");
+			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],2));
+			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],2);
+			console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-")
+		}
+	}
+}
 
 function convertToHandle(productName){
 	let handleName = productName.replace(/\s|\(|\)|,|\"|\'|%|\+|&|\/|\\|\.|\:|\*|\–/g,"-");
@@ -34,7 +143,7 @@ function convertToHandle(productName){
 		}
 		finalHandleName.push(handleName[i]);
 	}
-	finalHandleName = finalHandleName.join("")
+	finalHandleName = finalHandleName.join("");
 	return finalHandleName.toLowerCase();
 }
 
@@ -208,8 +317,8 @@ function readFile(files, type) {
 	    		verifyHandles(handleArray);
 	    		console.log(handleArray);
 	    	}
+	    	fixCryeItemCodes(filteredByItemCodesArray);
 	    	console.log(filteredByItemCodesArray);
-
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 
@@ -254,7 +363,7 @@ function filterClicked(){
 
 function initPage(){
 	//console.log(netsuiteToShopify["Variant SKU"]);
-	console.log(convertToHandle("control-wrap-4-"));
+	//console.log(convertToHandle("control-wrap-4-"));
 	submitClicked();
 	filterClicked();
 }
