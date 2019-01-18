@@ -33,3 +33,23 @@ function checkItemCodesLength(itemCodesObject){
 	}
 	console.log("the length of the item code object is: ", counter);
 }
+
+function verifyHandles(handles){
+	const legalChars = /^[a-z-0-9©®™\u2122\u00ae]*$/;
+	let testHandle = false;
+	let failedHandles = [];
+	for(let i = 0;i < handles.length;i++){
+		testHandle = legalChars.test(handles[i]);
+		if(!testHandle){
+			console.log("Handle incorrect index: ",i);
+			console.log("handle: ",handles[i]);
+			failedHandles.push(handles[i]);
+		}
+	}
+	if(failedHandles.length > 0){
+		console.log("Handle test Failed");
+	}
+	else{
+		console.log("handle test passed");
+	}	
+}

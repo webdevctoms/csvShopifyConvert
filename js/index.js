@@ -1,4 +1,4 @@
-let netsuiteToShopify = {
+const netsuiteToShopify = {
 	Title:1,
 	Vendor:5,
 	"Variant SKU":0,
@@ -7,13 +7,42 @@ let netsuiteToShopify = {
 	"Image Src":7,
 	"Image Alt Text":1,
 	"Variant Weight":6
-
 };
+let handleArray = [];
+//these are the columns that will possibly be added to in the shopify csv out of the possible 42
+const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37]
 
 let netSuiteDataObjectArray = [];
 
-function convertToHandle(){
-	
+function convertToHandle(productName){
+	let handleName = productName.replace(/\s|\(|\)|,|\"|\'|%|\+|&|\/|\\|\.|\:|\*|\–/g,"-");
+	//need this to handle long dash
+	handleName = handleName.replace(/\u2013|\u2014/g, "-");
+	handleName = handleName.split("");
+	let finalHandleName = [];
+
+	for(let i =0;i < handleName.length; i++){
+		//console.log(handleName[i]);
+		if(i === 0 && handleName[i] === "-"){
+			continue;
+		}
+		if(handleName[i] === "-" && handleName[i-1] === "-"){
+			continue;
+		}
+		finalHandleName.push(handleName[i]);
+	}
+	finalHandleName = finalHandleName.join("")
+	return finalHandleName.toLowerCase();
+}
+
+function createHandleArray(splitArr){
+	let handleStr = "";
+	for(let i = 0; i < splitArr.length; i++){
+		handleStr = convertToHandle(splitArr[i][1]);
+		handleArray.push(handleStr);
+	}
+	verifyHandles(handleArray);
+	console.log(handleArray);
 }
 
 function filterByItemCodes(splitArr){
@@ -73,7 +102,7 @@ function addBlank(splitArr){
 		}
 	}
 }
-
+//doesn't work with items starting with """
 function splitArray(newlineArray){
 	let returnArray = [];
 	//this is the array of each item in the line
@@ -86,6 +115,7 @@ function splitArray(newlineArray){
 		quoteFound = false;
 		for(let i = 0; i < newlineArray[k].length;i++){
 			let character = newlineArray[k].charAt(i)
+
 			if(character === '"'){
 				quoteFound = true;
 			}
@@ -156,6 +186,7 @@ function readFile(files, type) {
 	 
 	    	let commaSplitArray = splitArray(fileArrayByNewLines);
 	    	addBlank(commaSplitArray);
+	    	//console.log(commaSplitArray);
 	    	verifyLength(commaSplitArray);
 
 	    	let removedSplitArray = removeForPurchase(commaSplitArray);
@@ -163,6 +194,7 @@ function readFile(files, type) {
 	    	//console.log(removedSplitArray);
 
 	    	let filteredByItemCodesArray = filterByItemCodes(removedSplitArray); 
+	    	createHandleArray(filteredByItemCodesArray);
 	    	console.log(filteredByItemCodesArray);
 
     	}
@@ -210,6 +242,7 @@ function filterClicked(){
 
 function initPage(){
 	//console.log(netsuiteToShopify["Variant SKU"]);
+	
 	submitClicked();
 	filterClicked();
 }
