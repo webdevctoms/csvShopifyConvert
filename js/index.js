@@ -40,7 +40,13 @@ let variantOptions = {
 
 	},
 	size:{
-		
+		XS:"X-Small",
+		SM: "Small",
+		MD:"Medium",
+		LG:"Large",
+		XL:"Extra Large",
+		"2X":"2X-Large",
+		"3X":"3X-Large"
 	},
 	"waist size":{
 		"28":"28",
@@ -55,20 +61,14 @@ let variantOptions = {
 		"46":"46"
 	},
 	length:{
-		Short:"Short",
-		Regular:"Regular",
-		Long:"Long",
-		"X-Long": "X-Long"
+		S:"Short",
+		R:"Regular",
+		L:"Long",
+		XL: "X-Long"
 	}
 };
-//looking for 2digits and 2 letters or 1 digit and 3 letters
-let cryeConvertObject = {
-	"30L":"30-L",
-	"30R":"30-R",
-	"30S":"30-S",
-	//"30XL"
-};
-//when we grabbing info just skip these
+
+//when grabbing info just skip these
 let skipType = {
 	DMM:"DMM"
 };
@@ -76,7 +76,7 @@ let skipType = {
 const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37];
 
 let netSuiteDataObjectArray = [];
-
+//functions used to fix item code inconsitencies
 function fixItemSubString(item,index){
 	let splitItem = item.split("");
 	splitItem.splice(index,0,"-");
@@ -92,7 +92,7 @@ function fixCryeItemCodes(splitArr){
 	const oneDigitPattern = /\d{1}[a-zA-Z]{3}/;
 	//these should be XL plus length
 	//eg xl-l
-	const threeLetterPattern = /[XLRS]{1}[XLRS]{1}[XLRS]{1}/;
+	const threeLetterPattern = /[XLRSMDG]{1}[XLRSMDG]{1}[XLRS]{1}/;
 	for(let i = 0;i < splitArr.length;i++){
 
 		if(twoDigitPattern.test(splitArr[i][0])){
@@ -122,7 +122,7 @@ function fixCryeItemCodes(splitArr){
 		}
 	}
 }
-
+//Used to actually convert item name to handle
 function convertToHandle(productName){
 	let handleName = productName.replace(/\s|\(|\)|,|\"|\'|%|\+|&|\/|\\|\.|\:|\*|\–/g,"-");
 	//need this to handle long dash
@@ -146,7 +146,7 @@ function convertToHandle(productName){
 	finalHandleName = finalHandleName.join("");
 	return finalHandleName.toLowerCase();
 }
-
+//create an array of handles to be used in Shopify CSV
 function createHandleArray(splitArr){
 	let handleStr = "";
 	for(let i = 0; i < splitArr.length; i++){
@@ -157,7 +157,7 @@ function createHandleArray(splitArr){
 
 	return trailHandles;
 }
-
+//filter by item codes uploaded in single column csv
 function filterByItemCodes(splitArr){
 	let newArr = [];
 	let splitItem;
@@ -207,7 +207,7 @@ function removeForPurchase(splitArr){
 	}
 	return newArr;
 }
-
+//add blank to end of each array for items without a image 
 function addBlank(splitArr){
 	for(let i =0;i < splitArr.length; i++){
 		if(splitArr[i].length === 7){
@@ -216,6 +216,7 @@ function addBlank(splitArr){
 	}
 }
 //doesn't work with items starting with """
+//custom split to account for commas and "
 function splitArray(newlineArray){
 	let returnArray = [];
 	//this is the array of each item in the line

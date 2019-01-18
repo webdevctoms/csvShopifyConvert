@@ -1,3 +1,5 @@
+//verify the length of the array, now only correctly verifies the csv set up now
+//could be modified to use headings to determine the number of columns
 function verifyLength(splitArr){
 	let linesFound = []
 	for(let i = 0;i < splitArr.length;i++){
@@ -11,7 +13,7 @@ function verifyLength(splitArr){
 		console.log("All data correct");
 	}
 }
-
+//verify for puschased for sale and for resale items removed
 function verifyForPurchaseRemoved(splitArr){
 	let linesFound = [];
 	for(let i = 0;i < splitArr.length;i++){
@@ -25,7 +27,7 @@ function verifyForPurchaseRemoved(splitArr){
 		console.log("All data correct");
 	}
 }
-
+//just checking the length of the items code object
 function checkItemCodesLength(itemCodesObject){
 	let counter = 0;
 	for(let key in itemCodesObject){
@@ -33,7 +35,7 @@ function checkItemCodesLength(itemCodesObject){
 	}
 	console.log("the length of the item code object is: ", counter);
 }
-
+//verify that the handles are actually handles
 function verifyHandles(handles){
 	const legalChars = /^[a-z-0-9©®™\u2122\u00ae]*$/;
 	let testHandle = false;
