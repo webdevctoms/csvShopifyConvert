@@ -29,6 +29,9 @@ function convertToHandle(productName){
 		if(handleName[i] === "-" && handleName[i-1] === "-"){
 			continue;
 		}
+		if(handleName[i] === "-" && i === handleName.length - 1){
+			continue;
+		}
 		finalHandleName.push(handleName[i]);
 	}
 	finalHandleName = finalHandleName.join("")
@@ -41,8 +44,9 @@ function createHandleArray(splitArr){
 		handleStr = convertToHandle(splitArr[i][1]);
 		handleArray.push(handleStr);
 	}
-	verifyHandles(handleArray);
-	console.log(handleArray);
+	let trailHandles = verifyHandles(handleArray);
+
+	return trailHandles;
 }
 
 function filterByItemCodes(splitArr){
@@ -194,7 +198,16 @@ function readFile(files, type) {
 	    	//console.log(removedSplitArray);
 
 	    	let filteredByItemCodesArray = filterByItemCodes(removedSplitArray); 
-	    	createHandleArray(filteredByItemCodesArray);
+	    	let trailHandles = createHandleArray(filteredByItemCodesArray);
+	    	if(trailHandles.length > 0){
+	    		//console.log(trailHandles);
+	    		for(let i = 0; i < trailHandles.length;i++){
+	    			//console.log("trail handle item:",handleArray[trailHandles[i]])
+	    			handleArray[trailHandles[i]] = convertToHandle(handleArray[trailHandles[i]]);
+	    		}
+	    		verifyHandles(handleArray);
+	    		console.log(handleArray);
+	    	}
 	    	console.log(filteredByItemCodesArray);
 
     	}
@@ -203,7 +216,6 @@ function readFile(files, type) {
 	    	let fileArrayByNewLines = fileString.split("\n");
 	    	//just need to remember to put new line at the end of the array
 	    	fileArrayByNewLines.pop();
-	    	//console.log(fileArrayByNewLines); 
 	 
 	    	let commaSplitArray = splitArray(fileArrayByNewLines);
 	    	addBlank(commaSplitArray);
@@ -242,7 +254,7 @@ function filterClicked(){
 
 function initPage(){
 	//console.log(netsuiteToShopify["Variant SKU"]);
-	
+	console.log(convertToHandle("control-wrap-4-"));
 	submitClicked();
 	filterClicked();
 }

@@ -38,6 +38,7 @@ function verifyHandles(handles){
 	const legalChars = /^[a-z-0-9©®™\u2122\u00ae]*$/;
 	let testHandle = false;
 	let failedHandles = [];
+	let trailingHandles = [];
 	for(let i = 0;i < handles.length;i++){
 		testHandle = legalChars.test(handles[i]);
 		if(!testHandle){
@@ -45,11 +46,18 @@ function verifyHandles(handles){
 			console.log("handle: ",handles[i]);
 			failedHandles.push(handles[i]);
 		}
+		if(handles[i].charAt(handles[i].length - 1) === "-"){
+			console.log("Handle incorrect index: ",i);
+			console.log("handle: ",handles[i]);
+			trailingHandles.push(i);
+		}
 	}
-	if(failedHandles.length > 0){
+	if(failedHandles.length > 0 || trailingHandles.length > 0){
 		console.log("Handle test Failed");
 	}
 	else{
 		console.log("handle test passed");
 	}	
+
+	return trailingHandles;
 }
