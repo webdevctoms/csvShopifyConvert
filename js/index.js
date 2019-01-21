@@ -141,9 +141,16 @@ function convertCSV(filteredArr){
 	}
 
 }
-
+//build shopify array before using it to split up some of the work
 function preBuildShopifyArray(filteredArr){
 	shopifyDataArray.push(templateHeadings);
+	for(let i = 1; i < filteredArr.length;i++){
+		let shopifyRow = [];
+		for(let k = 0; k < 42;k++){
+			shopifyRow.push("");
+		}
+		shopifyDataArray.push(shopifyRow);
+	}
 }
 
 //functions used to fix item code inconsitencies
@@ -409,9 +416,12 @@ function readFile(files, type) {
 	    		console.log(handleArray);
 	    	}
 	    	fixCryeItemCodes(filteredByItemCodesArray);
-	    	let removedSkip = removeSkipBy(skipType,filteredByItemCodesArray);
+	    	let removedSkipArray = removeSkipBy(skipType,filteredByItemCodesArray);
 
-	    	console.log(removedSkip);
+	    	console.log(removedSkipArray);
+	    	preBuildShopifyArray(removedSkipArray);
+	    	//console.log(shopifyDataArray);
+	    	verifyArrayLengths(removedSkipArray,shopifyDataArray);
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 

@@ -63,3 +63,13 @@ function verifyHandles(handles){
 
 	return trailingHandles;
 }
+
+function verifyArrayLengths(arr1,arr2){
+	console.log("Testing array lengths");
+	if(arr1.length === arr2.length){
+		console.log("Test passed both arrays same length");
+	}
+	else{
+		console.log("Test failed both arrays not same length");
+	}
+}
