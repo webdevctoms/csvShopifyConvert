@@ -51,8 +51,6 @@ let variantOptions = {
 		"FG/CB":"Foliage Green/Coyote Brown",
 		NVC:"Crye Navy",
 		GYC:"Crye Grey",
-
-
 	},
 	Size:{
 		XS:"X-Small",
@@ -118,11 +116,12 @@ let variantOptions = {
 };
 
 //when grabbing info just skip these
-let skipType = {
+const skipType = {
 	DMM:"DMM",
 	P:"P",
 	"P (OTC case as ordered from CustomFab. Nylon kit part)":"P (OTC case as ordered from CustomFab. Nylon kit part)"
 };
+
 //these are the columns that will possibly be added to in the shopify csv out of the possible 42
 const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37];
 let shopifyDataArray = [];
@@ -133,12 +132,27 @@ let shopifyDataArray = [];
 //will need to capture each single item code and then compare t0 item code that can be split
 //also need a crye check to add C to MC,BK, RG,GY,NV
 function convertCSV(filteredArr){
-
-	for(let i = 0;i < filteredArr.length;i++){
-		for(let k = 0; k < 42;k++){
-
+	//the handle which applies to variants
+	let parentHandle = "";
+	//i = netsuite filtered row
+	//k = shopify new data row
+	for(let i = 1;i < filteredArr.length;i++){
+		
+		for(let k = 0; k < shopifyDataArray[i].length;k++){
+			if(k === 0){
+				if(handleArray[i] === ""){
+					shopifyDataArray[i][k] = parentHandle;
+				}
+				else{
+					shopifyDataArray[i][k] = handleArray[i];
+					parentHandle = handleArray[i];
+				}
+				
+			}
 		}
 	}
+
+	console.log("final shopify data: ",shopifyDataArray);
 
 }
 //build shopify array before using it to split up some of the work
@@ -225,9 +239,23 @@ function convertToHandle(productName){
 }
 //create an array of handles to be used in Shopify CSV
 function createHandleArray(splitArr){
+	//hold the single item code to detect variants
+	let prevItemCode = "";
 	let handleStr = "";
 	for(let i = 0; i < splitArr.length; i++){
-		handleStr = convertToHandle(splitArr[i][1]);
+		
+		let splitItemCode = splitArr[i][0].split("-");
+		//console.log(splitItemCode);
+		if(splitItemCode.length === 1){
+			prevItemCode = splitItemCode[0];
+			handleStr = convertToHandle(splitArr[i][1]);
+		}
+		//found non variant
+		else if(splitItemCode[0] != prevItemCode){
+			prevItemCode = splitItemCode[0];
+			handleStr = convertToHandle(splitArr[i][1]);
+		}
+
 		handleArray.push(handleStr);
 	}
 	let trailHandles = verifyHandles(handleArray);
@@ -405,7 +433,12 @@ function readFile(files, type) {
 	    	//console.log(removedSplitArray);
 
 	    	let filteredByItemCodesArray = filterByItemCodes(removedSplitArray); 
-	    	let trailHandles = createHandleArray(filteredByItemCodesArray);
+	    	
+	    	fixCryeItemCodes(filteredByItemCodesArray);
+	    	let removedSkipArray = removeSkipBy(skipType,filteredByItemCodesArray);
+
+	    	console.log(removedSkipArray);
+	    	let trailHandles = createHandleArray(removedSkipArray);
 	    	if(trailHandles.length > 0){
 	    		//console.log(trailHandles);
 	    		for(let i = 0; i < trailHandles.length;i++){
@@ -415,13 +448,10 @@ function readFile(files, type) {
 	    		verifyHandles(handleArray);
 	    		console.log(handleArray);
 	    	}
-	    	fixCryeItemCodes(filteredByItemCodesArray);
-	    	let removedSkipArray = removeSkipBy(skipType,filteredByItemCodesArray);
-
-	    	console.log(removedSkipArray);
 	    	preBuildShopifyArray(removedSkipArray);
 	    	//console.log(shopifyDataArray);
 	    	verifyArrayLengths(removedSkipArray,shopifyDataArray);
+	    	convertCSV(removedSkipArray);
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 
