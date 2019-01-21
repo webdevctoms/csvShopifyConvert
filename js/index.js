@@ -1,19 +1,20 @@
 const netsuiteToShopify = {
-	Title:1,
-	Vendor:5,
-	"Variant SKU":0,
-	"Metafields Global Description Tag":1,
-	"Variant Price":4,
-	"Image Src":7,
-	"Image Alt Text":1,
-	"Variant Weight":6
+	"1":1,
+	"5":3,
+	"0":16,
+	"1":18,
+	"4":29,
+	"7":35,
+	"1":37,
+	"6":39
 };
 let handleArray = [];
 //use this to see if split item code is variant and of what
 //with cry stuff might be best to just use description but need to remove ,
 let variantOptions = {
-	color:{
+	Color:{
 		BK:"Black",
+		BM:"Black Matte",
 		MC:"Multicam",
 		RG:"Ranger Green",
 		CB:"Coyote Brown",
@@ -30,25 +31,49 @@ let variantOptions = {
 		Grey:"Grey",
 		Olive:"Olive",
 		Sand:"Sand",
+		BL:"Blue",
+		BZO:"Blaze Orange",
 		RGC:"Crye Ranger Green",
 		MCC:"Crye Multicam",
 		BKC:"Crye Black",
+		RTX:"RealTree Xtra",
 		MAR:"Crye Multicam Arid",
 		MBK:"Crye Multicam Black",
 		MTR:"Crye Multicam Tropic",
-		KH:"Crye Khaki 400"
+		KH:"Crye Khaki 400",
+		CP:"CADPAT",
+		AOR:"AOR 1",
+		AOR1:"AOR 1",
+		"RD/SLV":"Red/Silver",
+		"SLV/RD":"Silver/Red",
+		FG:"Foliage Green",
+		"CB/FG":"Coyote Brown/Foliage Green",
+		"FG/CB":"Foliage Green/Coyote Brown",
+		NVC:"Crye Navy",
+		GYC:"Crye Grey",
+
 
 	},
-	size:{
+	Size:{
 		XS:"X-Small",
 		SM: "Small",
 		MD:"Medium",
 		LG:"Large",
 		XL:"Extra Large",
 		"2X":"2X-Large",
-		"3X":"3X-Large"
+		"3X":"3X-Large",
+		"2XL":"2X-Large",
+		"3XL":"4X-Large",
+		"4XL":"5X-Large",
+		"5XL":"3X-Large",
+		"2XS":"2X-Small",
+		"3XS":"3X-Small",
+		"4XS":"4X-Small",
+		"L/XL":"Large/X-Large",
+		"SM/MED":"Small/Medium"
+
 	},
-	"waist size":{
+	"Waist Size":{
 		"28":"28",
 		"30":"30",
 		"32":"32",
@@ -60,22 +85,67 @@ let variantOptions = {
 		"44":"44",
 		"46":"46"
 	},
-	length:{
+	Length:{
 		S:"Short",
 		R:"Regular",
 		L:"Long",
 		XL: "X-Long"
+	},
+	Mount:{
+		BM:"Belt Mount",
+		MM:"MOLLE Mount"
+	},
+	"Hat Size":{
+		"6 3/4":"6 3/4",
+		"7":"7",
+		"7 1/2":"7 1/2",
+		"7 1/4":"7 1/4",
+		"7 1/8":"7 1/8",
+		"7 3/4":"7 3/4"
+	},
+	"Helmet Size":{
+		LRG:"Large",
+		MED:"Medium",
+		XLG:"X-Large"
+	},
+	//this is for 51010
+	"Set-Splint Size":{
+		"0":'3" x 12"',
+		"1":'4" x 15"',
+		"2":'4" x 30"',
+		"3":'5" x 30"'
 	}
 };
 
 //when grabbing info just skip these
 let skipType = {
-	DMM:"DMM"
+	DMM:"DMM",
+	P:"P",
+	"P (OTC case as ordered from CustomFab. Nylon kit part)":"P (OTC case as ordered from CustomFab. Nylon kit part)"
 };
 //these are the columns that will possibly be added to in the shopify csv out of the possible 42
 const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37];
+let shopifyDataArray = [];
+//let netSuiteDataObjectArray = [];
+//first thing in shopify converted array will be from handle array
+//for variants will need to look through object and compare that with split item code value then use key name for option name, maybe better to flip key vals for object if it goes to slow then just have to check the keys in one object
+//to get options need to split item code loop through them and loop through keys of variants then see if that variant[key][item] exists and that item code === the last one item code that didnt have a -
+//will need to capture each single item code and then compare t0 item code that can be split
+//also need a crye check to add C to MC,BK, RG,GY,NV
+function convertCSV(filteredArr){
 
-let netSuiteDataObjectArray = [];
+	for(let i = 0;i < filteredArr.length;i++){
+		for(let k = 0; k < 42;k++){
+
+		}
+	}
+
+}
+
+function preBuildShopifyArray(filteredArr){
+	shopifyDataArray.push(templateHeadings);
+}
+
 //functions used to fix item code inconsitencies
 function fixItemSubString(item,index){
 	let splitItem = item.split("");
@@ -195,6 +265,26 @@ function formatString(fileString){
 	let fileArray = fileString.split(",");
 	//console.log("in function: ", fileString);
 	//console.log(fileArray[24].trim());
+}
+
+function removeSkipBy(skipObject,splitArr){
+	let newArr = [];
+	for(let i = 0;i < splitArr.length; i++){
+		let splitItemCode = splitArr[i][0].split("-");
+		let foundSkip = false;
+		for(let key in skipObject){
+			if(splitItemCode.includes(skipObject[key])){
+				foundSkip = true;
+				break;
+			}
+		}
+		if(foundSkip){
+			continue;
+		}
+		newArr.push(splitArr[i]);
+		
+	}
+	return newArr;
 }
 
 function removeForPurchase(splitArr){
@@ -319,7 +409,9 @@ function readFile(files, type) {
 	    		console.log(handleArray);
 	    	}
 	    	fixCryeItemCodes(filteredByItemCodesArray);
-	    	console.log(filteredByItemCodesArray);
+	    	let removedSkip = removeSkipBy(skipType,filteredByItemCodesArray);
+
+	    	console.log(removedSkip);
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 

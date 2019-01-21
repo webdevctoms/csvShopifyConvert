@@ -1,3 +1,5 @@
+//this file deals with item codes upload
+//takes in a single column csv of the item codes to filter by
 let itemCodes = {
 
 };

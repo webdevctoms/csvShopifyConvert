@@ -1,3 +1,5 @@
+//this file is used to construct the new CSV headings and the structure of the CSV
+
 let templateHeadings = [];
 
 function readFileTemplate(files) {
