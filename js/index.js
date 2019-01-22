@@ -14,6 +14,7 @@ const netsuiteToShopify = {
 	//weight grams
 	"23":6
 };
+
 let handleArray = [];
 //use this to see if split item code is variant and of what
 //with cry stuff might be best to just use description but need to remove ,
@@ -128,8 +129,9 @@ const skipType = {
 	"P (OTC case as ordered from CustomFab. Nylon kit part)":"P (OTC case as ordered from CustomFab. Nylon kit part)"
 };
 
-//these are the columns that will possibly be added to in the shopify csv out of the possible 42
-const shopifyFields = [0,1,10,11,12,13,14,15,16,17,26,28,29,35,37];
+
+const variantNameIndexes = [10,12,14];
+const variantValueIndexes = [11,13,15];
 let shopifyDataArray = [];
 //let netSuiteDataObjectArray = [];
 //first thing in shopify converted array will be from handle array
@@ -137,29 +139,53 @@ let shopifyDataArray = [];
 //to get options need to split item code loop through them and loop through keys of variants then see if that variant[key][item] exists and that item code === the last one item code that didnt have a -
 //will need to capture each single item code and then compare t0 item code that can be split
 //also need a crye check to add C to MC,BK, RG,GY,NV
+function checkVariant(splitCode){
+	let variantData = {
+		optionName:[],
+		optionValue:[]
+	}
+
+	for(let key in variantOptions){
+		for(let i = 1; i < splitCode.length;i++){
+			//found a actual variant option
+			if(variantOptions[key][splitCode[i]]){
+				variantData.optionName.push(key);
+				variantData.optionValue.push(variantOptions[key][splitCode[i]]);
+			}
+		}	
+	}
+
+	return variantData;
+}
+
 function convertCSV(filteredArr){
 	//the handle which applies to variants
 	let prevItemCode = "";
 	let foundVariant = false;
 	let preItemCodeIndex;
-	let vairantOptions = [];
+	//will hold the variant names ie color size etc
+	let currentVariants = {};
+	let cryeCheck = false;
+	let variantsUpdated = false;
 	//i = netsuite filtered row
 	//k = shopify new data row
 	for(let i = 1;i < filteredArr.length;i++){
-		let splitItemCode = filteredArr[i][0].split("");
+		let splitItemCode = filteredArr[i][0].split("-");
 		//found a possible parent item code and then assign it
 		if(splitItemCode.length === 1){
 			prevItemCode = splitItemCode[0];
 			foundVariant = false;
+			variantsUpdated = false;
 			preItemCodeIndex = i;
-			vairantOptions = [];
+			currentVariants = {};
 		}
 		//no longer with same parent item code assign new possible parent item code
 		else if(splitItemCode[0] != prevItemCode){
 			prevItemCode = splitItemCode[0];
 			foundVariant = false;
 			preItemCodeIndex = i;
-			vairantOptions = [];
+			variantsUpdated = false;
+			currentVariants = {};
 		}
 		else if(splitItemCode.length > 1){
 			foundVariant = true;
@@ -184,12 +210,30 @@ function convertCSV(filteredArr){
 				shopifyDataArray[i][k] = "1";
 				continue;
 			}
+			if(foundVariant){
+				let variantData = checkVariant(splitItemCode);
+				if(variantData.optionName.length && !variantsUpdated){
+					//assign all variant names
+					variantData.optionName.forEach(function(name){
+						if(!currentVariants[name]){
+							currentVariants[name] = name;
+						}
+					});
+					let optionNameIndex = 0;
+					for(let variantName in currentVariants){
+						shopifyDataArray[preItemCodeIndex][variantNameIndexes[optionNameIndex]] = variantName;
+						optionNameIndex++;
+					}
+					variantsUpdated = true;
+
+				}
+			}
 		}
 	}
 
 	console.log("final shopify data: ",shopifyDataArray);
-
 }
+
 //build shopify array before using it to split up some of the work
 function preBuildShopifyArray(filteredArr){
 	shopifyDataArray.push(templateHeadings);
