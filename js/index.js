@@ -1,12 +1,18 @@
 const netsuiteToShopify = {
+	//Title
 	"1":1,
-	"5":3,
-	"0":16,
-	"1":18,
-	"4":29,
-	"7":35,
-	"1":37,
-	"6":39
+	//Vendor
+	"3":5,
+	//MetaFields Global Tag
+	"18":1,
+	//Variant Price
+	"29":4,
+	//Image Source
+	"35":7,
+	//Image Alt Text
+	"37":1,
+	//weight grams
+	"23":6
 };
 let handleArray = [];
 //use this to see if split item code is variant and of what
@@ -133,21 +139,50 @@ let shopifyDataArray = [];
 //also need a crye check to add C to MC,BK, RG,GY,NV
 function convertCSV(filteredArr){
 	//the handle which applies to variants
-	let parentHandle = "";
+	let prevItemCode = "";
+	let foundVariant = false;
+	let preItemCodeIndex;
+	let vairantOptions = [];
 	//i = netsuite filtered row
 	//k = shopify new data row
 	for(let i = 1;i < filteredArr.length;i++){
-		
+		let splitItemCode = filteredArr[i][0].split("");
+		//found a possible parent item code and then assign it
+		if(splitItemCode.length === 1){
+			prevItemCode = splitItemCode[0];
+			foundVariant = false;
+			preItemCodeIndex = i;
+			vairantOptions = [];
+		}
+		//no longer with same parent item code assign new possible parent item code
+		else if(splitItemCode[0] != prevItemCode){
+			prevItemCode = splitItemCode[0];
+			foundVariant = false;
+			preItemCodeIndex = i;
+			vairantOptions = [];
+		}
+		else if(splitItemCode.length > 1){
+			foundVariant = true;
+		}
 		for(let k = 0; k < shopifyDataArray[i].length;k++){
 			if(k === 0){
-				if(handleArray[i] === ""){
-					shopifyDataArray[i][k] = parentHandle;
-				}
-				else{
-					shopifyDataArray[i][k] = handleArray[i];
-					parentHandle = handleArray[i];
-				}
-				
+				shopifyDataArray[i][k] = handleArray[i];
+				continue;			
+			}
+			if(netsuiteToShopify[k]){
+				shopifyDataArray[i][k] = filteredArr[i][netsuiteToShopify[k]];
+			}
+			if(k === 26){
+				shopifyDataArray[i][k] = "continue";
+				continue;
+			}
+			if(k === 28){
+				shopifyDataArray[i][k] = "manual";
+				continue;
+			}
+			if(k === 36 && shopifyDataArray[i][35] != ""){
+				shopifyDataArray[i][k] = "1";
+				continue;
 			}
 		}
 	}
@@ -187,29 +222,29 @@ function fixCryeItemCodes(splitArr){
 	for(let i = 0;i < splitArr.length;i++){
 
 		if(twoDigitPattern.test(splitArr[i][0])){
-			console.log("Found 2 digit match index: ",i);
+			//console.log("Found 2 digit match index: ",i);
 			let splitItemCode = splitArr[i][0].split("-");
 			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],2));
 			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],2);
-			console.log(splitItemCode.join("-"));
-			splitArr[i][0] = splitItemCode.join("-")
+			//console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-");
 
 		}
 		else if(oneDigitPattern.test(splitArr[i][0])){
-			console.log("Found 1 digit match index: ",i);
+			//console.log("Found 1 digit match index: ",i);
 			let splitItemCode = splitArr[i][0].split("-");
 			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],3));
 			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],3);
-			console.log(splitItemCode.join("-"));
-			splitArr[i][0] = splitItemCode.join("-")
+			//console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-");
 		}
 		else if(threeLetterPattern.test(splitArr[i][0])){
-			console.log("Found 3 letter match index: ",i);
+			//console.log("Found 3 letter match index: ",i);
 			let splitItemCode = splitArr[i][0].split("-");
 			//console.log(fixItemSubString(splitItemCode[splitItemCode.length - 1],2));
 			splitItemCode[splitItemCode.length - 1] = fixItemSubString(splitItemCode[splitItemCode.length - 1],2);
-			console.log(splitItemCode.join("-"));
-			splitArr[i][0] = splitItemCode.join("-")
+			//console.log(splitItemCode.join("-"));
+			splitArr[i][0] = splitItemCode.join("-");
 		}
 	}
 }
@@ -237,6 +272,22 @@ function convertToHandle(productName){
 	finalHandleName = finalHandleName.join("");
 	return finalHandleName.toLowerCase();
 }
+
+function convertToGrams(splitArr){
+	for(let i = 1;i < splitArr.length;i++){
+
+		splitArr[i][6] = !isNaN((parseFloat(splitArr[i][6]) * 1000).toString()) ? (parseFloat(splitArr[i][6]) * 1000).toString() : ""; 		
+	}
+}
+
+function formatImageStrings(splitArr){
+	for(let i = 1;i < splitArr.length;i++){
+		if(splitArr[i][7] != ""){
+			splitArr[i][7] = 'http://ctoms.ca' + splitArr[i][7];
+		}
+	}
+}
+
 //create an array of handles to be used in Shopify CSV
 function createHandleArray(splitArr){
 	//hold the single item code to detect variants
@@ -451,6 +502,8 @@ function readFile(files, type) {
 	    	preBuildShopifyArray(removedSkipArray);
 	    	//console.log(shopifyDataArray);
 	    	verifyArrayLengths(removedSkipArray,shopifyDataArray);
+	    	formatImageStrings(removedSkipArray);
+	    	convertToGrams(removedSkipArray);
 	    	convertCSV(removedSkipArray);
     	}
     	else if(type === "submit"){
