@@ -3,6 +3,8 @@ const netsuiteToShopify = {
 	"1":1,
 	//Vendor
 	"3":5,
+	//variant sku/itemcode
+	"16":0,
 	//MetaFields Global Tag
 	"18":1,
 	//Variant Price
@@ -46,6 +48,7 @@ let variantOptions = {
 		BKC:"Crye Black",
 		NVC:"Crye Navy",
 		GYC:"Crye Grey",
+		CBC:"Crye Coyote Brown",
 		//**************************************
 		RTX:"RealTree Xtra",
 		MAR:"Crye Multicam Arid",
@@ -96,7 +99,7 @@ let variantOptions = {
 		S:"Short",
 		R:"Regular",
 		L:"Long",
-		XL: "X-Long"
+		XLL: "X-Long"
 	},
 	Mount:{
 		BM:"Belt Mount",
@@ -183,15 +186,22 @@ function isCrye(description,splitItem){
 		MC:"MCC",
 		BK:"BKC",
 		NV:"NVC",
-		GY:"GYC"		
+		GY:"GYC",
+		CB:"CBC"		
 	};
-	const cryePattern = /Crye|crye/;
+	const cryeLength = {
+		XL:"XLL"		
+	};
+	const cryePattern = /Crye|crye|CRYE/;
 	const foundCrye = cryePattern.test(description);
 	if(foundCrye){
-		
+		//console.log(splitItem);
 		if(cryeColors[splitItem[1]]){
 			splitItem[1] = cryeColors[splitItem[1]];
 			
+		}
+		if(cryeLength[splitItem[3]]){
+			splitItem[3] = cryeLength[splitItem[3]];
 		}
 	}
 }
@@ -217,6 +227,7 @@ function isNaso(description,splitItem){
 		}
 	}
 }
+
 
 function findVariants(splitCode){
 	let variantArr = [];
@@ -292,6 +303,9 @@ function convertCSV(filteredArr){
 			if(netsuiteToShopify[k]){
 				shopifyDataArray[i][k] = filteredArr[i][netsuiteToShopify[k]];
 			}
+			if(k === 16){
+				shopifyDataArray[i][k] = filteredArr[i][0];
+			}
 			if(k === 26){
 				shopifyDataArray[i][k] = "continue";
 				continue;
@@ -307,6 +321,7 @@ function convertCSV(filteredArr){
 			if(foundVariant){
 				let variantData = checkVariant(splitItemCode);
 				//update the parent of the variant option with the option names
+				//can't have sku and price for parent
 				if(variantData.optionName.length && !variantsUpdated){
 					//assign all variant names
 					variantData.optionName.forEach(function(name){
@@ -319,11 +334,13 @@ function convertCSV(filteredArr){
 						shopifyDataArray[preItemCodeIndex][variantNameIndexes[optionNameIndex]] = variantName;
 						optionNameIndex++;
 					}
+					shopifyDataArray[preItemCodeIndex][16] = "";
+					shopifyDataArray[preItemCodeIndex][29] = "";
 					variantsUpdated = true;
 
 				}
 				if(!cryeColorUpdated){
-					isCrye(filteredArr[i][3],splitItemCode);
+					isCrye(filteredArr[i][5],splitItemCode);
 					//console.log("modified crye color: ", splitItemCode);
 					cryeColorUpdated = true;
 				}
