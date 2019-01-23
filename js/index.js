@@ -40,9 +40,13 @@ let variantOptions = {
 		Sand:"Sand",
 		BL:"Blue",
 		BZO:"Blaze Orange",
+		//Need to modify these ones when converting data
 		RGC:"Crye Ranger Green",
 		MCC:"Crye Multicam",
 		BKC:"Crye Black",
+		NVC:"Crye Navy",
+		GYC:"Crye Grey",
+		//**************************************
 		RTX:"RealTree Xtra",
 		MAR:"Crye Multicam Arid",
 		MBK:"Crye Multicam Black",
@@ -56,8 +60,7 @@ let variantOptions = {
 		FG:"Foliage Green",
 		"CB/FG":"Coyote Brown/Foliage Green",
 		"FG/CB":"Foliage Green/Coyote Brown",
-		NVC:"Crye Navy",
-		GYC:"Crye Grey",
+		Bk:"Crye Black"
 	},
 	Size:{
 		XS:"X-Small",
@@ -76,7 +79,6 @@ let variantOptions = {
 		"4XS":"4X-Small",
 		"L/XL":"Large/X-Large",
 		"SM/MED":"Small/Medium"
-
 	},
 	"Waist Size":{
 		"28":"28",
@@ -119,6 +121,10 @@ let variantOptions = {
 		"1":'4" x 15"',
 		"2":'4" x 30"',
 		"3":'5" x 30"'
+	},
+	"Collar Color":{
+		CL:"Clear",
+		MIL:"Military,OD"
 	}
 };
 
@@ -158,6 +164,40 @@ function checkVariant(splitCode){
 	return variantData;
 }
 
+function isCrye(description,splitItem){
+	const cryeColors = {
+		RG:"RGC",
+		MC:"MCC",
+		BK:"BKC",
+		NV:"NVC",
+		GY:"GYC"		
+	};
+	const cryePattern = /Crye|crye/;
+	const foundCrye = cryePattern.test(description);
+	if(foundCrye){
+		
+		if(cryeColors[splitItem[1]]){
+			splitItem[1] = cryeColors[splitItem[1]];
+			
+		}
+	}
+
+}
+
+function findVariants(splitCode){
+	let variantArr = [];
+
+	splitCode.forEach(function(item){
+		for(let key in variantOptions){
+			if(variantOptions[key][item]){
+				variantArr.push(variantOptions[key][item]);
+			}
+		}		
+	});
+
+	return variantArr;
+}
+
 function convertCSV(filteredArr){
 	//the handle which applies to variants
 	let prevItemCode = "";
@@ -165,30 +205,45 @@ function convertCSV(filteredArr){
 	let preItemCodeIndex;
 	//will hold the variant names ie color size etc
 	let currentVariants = {};
-	let cryeCheck = false;
+	let cryeColorUpdated = false;
 	let variantsUpdated = false;
+	let variantValuesUpdated = false;
 	//i = netsuite filtered row
 	//k = shopify new data row
 	for(let i = 1;i < filteredArr.length;i++){
 		let splitItemCode = filteredArr[i][0].split("-");
+		let currentItemCode;
+		if(!parseInt(splitItemCode[0])){
+			currentItemCode = splitItemCode[1];
+		}
+		else{
+			currentItemCode = splitItemCode[0]
+		}
 		//found a possible parent item code and then assign it
 		if(splitItemCode.length === 1){
-			prevItemCode = splitItemCode[0];
+			prevItemCode = currentItemCode;
 			foundVariant = false;
 			variantsUpdated = false;
+			cryeColorUpdated = false;
+			variantValuesUpdated = false;
 			preItemCodeIndex = i;
 			currentVariants = {};
 		}
 		//no longer with same parent item code assign new possible parent item code
-		else if(splitItemCode[0] != prevItemCode){
-			prevItemCode = splitItemCode[0];
+		else if(currentItemCode != prevItemCode){
+			prevItemCode = currentItemCode;
 			foundVariant = false;
 			preItemCodeIndex = i;
 			variantsUpdated = false;
+			cryeColorUpdated = false;
+			variantValuesUpdated = false;
 			currentVariants = {};
 		}
+		//found a possible variant
 		else if(splitItemCode.length > 1){
 			foundVariant = true;
+			cryeColorUpdated = false;
+			variantValuesUpdated = false;
 		}
 		for(let k = 0; k < shopifyDataArray[i].length;k++){
 			if(k === 0){
@@ -212,6 +267,7 @@ function convertCSV(filteredArr){
 			}
 			if(foundVariant){
 				let variantData = checkVariant(splitItemCode);
+				//update the parent of the variant option with the option names
 				if(variantData.optionName.length && !variantsUpdated){
 					//assign all variant names
 					variantData.optionName.forEach(function(name){
@@ -227,6 +283,23 @@ function convertCSV(filteredArr){
 					variantsUpdated = true;
 
 				}
+				if(!cryeColorUpdated){
+					isCrye(filteredArr[i][3],splitItemCode);
+					//console.log("modified crye color: ", splitItemCode);
+					cryeColorUpdated = true;
+				}
+
+				if(!variantValuesUpdated){
+					let variantArray = findVariants(splitItemCode);
+					//console.log(variantArray);
+					let variantValIndex = 0;
+					variantArray.forEach(function(varaintVal){
+						shopifyDataArray[i][variantValueIndexes[variantValIndex]] = varaintVal;
+						variantValIndex++;
+					});
+					variantValuesUpdated = true;
+				}
+				
 			}
 		}
 	}
@@ -340,14 +413,20 @@ function createHandleArray(splitArr){
 	for(let i = 0; i < splitArr.length; i++){
 		
 		let splitItemCode = splitArr[i][0].split("-");
+		if(!parseInt(splitItemCode[0])){
+			currentItemCode = splitItemCode[1];
+		}
+		else{
+			currentItemCode = splitItemCode[0]
+		}
 		//console.log(splitItemCode);
 		if(splitItemCode.length === 1){
-			prevItemCode = splitItemCode[0];
+			prevItemCode = currentItemCode;
 			handleStr = convertToHandle(splitArr[i][1]);
 		}
 		//found non variant
-		else if(splitItemCode[0] != prevItemCode){
-			prevItemCode = splitItemCode[0];
+		else if(currentItemCode != prevItemCode){
+			prevItemCode = currentItemCode;
 			handleStr = convertToHandle(splitArr[i][1]);
 		}
 
