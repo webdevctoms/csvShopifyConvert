@@ -125,6 +125,20 @@ let variantOptions = {
 	"Collar Color":{
 		CL:"Clear",
 		MIL:"Military,OD"
+	},
+	"NPA Sizes":{
+		"20N":"20 FR",
+		"22N":"22 FR",
+		"24N":"24 FR",
+		"26N":"26 FR",
+		"28N":"28 FR",
+		"30N":"30 FR",
+		"32N":"32 FR",
+		"34N":"34 FR"
+	},
+	"Needle Gauge":{
+		"10":"10 G x 3.25 inch",
+		"14":"14 G x 3.25 inch"
 	}
 };
 
@@ -139,7 +153,6 @@ const skipType = {
 const variantNameIndexes = [10,12,14];
 const variantValueIndexes = [11,13,15];
 let shopifyDataArray = [];
-//let netSuiteDataObjectArray = [];
 //first thing in shopify converted array will be from handle array
 //for variants will need to look through object and compare that with split item code value then use key name for option name, maybe better to flip key vals for object if it goes to slow then just have to check the keys in one object
 //to get options need to split item code loop through them and loop through keys of variants then see if that variant[key][item] exists and that item code === the last one item code that didnt have a -
@@ -181,14 +194,36 @@ function isCrye(description,splitItem){
 			
 		}
 	}
+}
 
+function isNaso(description,splitItem){
+	const nasoLength = {
+		"20":"20N",
+		"22":"22N",
+		"24":"24N",
+		"26":"26N",
+		"28":"28N",
+		"30":"30N",
+		"32":"32N",
+		"34":"34N"		
+	};
+	const nasoePattern = /Nasopharyngeal|nasopharyngeal/;
+	const foundNaso = nasoePattern.test(description);
+	if(foundNaso){
+		
+		if(nasoLength[splitItem[1]]){
+			splitItem[1] = nasoLength[splitItem[1]];
+			
+		}
+	}
 }
 
 function findVariants(splitCode){
 	let variantArr = [];
 
-	splitCode.forEach(function(item){
+	splitCode.forEach(function(item,index){
 		for(let key in variantOptions){
+
 			if(variantOptions[key][item]){
 				variantArr.push(variantOptions[key][item]);
 			}
@@ -208,6 +243,7 @@ function convertCSV(filteredArr){
 	let cryeColorUpdated = false;
 	let variantsUpdated = false;
 	let variantValuesUpdated = false;
+	let nasoUpdated = true;
 	//i = netsuite filtered row
 	//k = shopify new data row
 	for(let i = 1;i < filteredArr.length;i++){
@@ -226,6 +262,7 @@ function convertCSV(filteredArr){
 			variantsUpdated = false;
 			cryeColorUpdated = false;
 			variantValuesUpdated = false;
+			nasoUpdated = false;
 			preItemCodeIndex = i;
 			currentVariants = {};
 		}
@@ -237,6 +274,7 @@ function convertCSV(filteredArr){
 			variantsUpdated = false;
 			cryeColorUpdated = false;
 			variantValuesUpdated = false;
+			nasoUpdated = false;
 			currentVariants = {};
 		}
 		//found a possible variant
@@ -244,6 +282,7 @@ function convertCSV(filteredArr){
 			foundVariant = true;
 			cryeColorUpdated = false;
 			variantValuesUpdated = false;
+			nasoUpdated = false;
 		}
 		for(let k = 0; k < shopifyDataArray[i].length;k++){
 			if(k === 0){
@@ -287,6 +326,12 @@ function convertCSV(filteredArr){
 					isCrye(filteredArr[i][3],splitItemCode);
 					//console.log("modified crye color: ", splitItemCode);
 					cryeColorUpdated = true;
+				}
+
+				if(!nasoUpdated){
+					isNaso(filteredArr[i][3],splitItemCode);
+					//console.log("modified crye color: ", splitItemCode);
+					nasoUpdated = true;
 				}
 
 				if(!variantValuesUpdated){
