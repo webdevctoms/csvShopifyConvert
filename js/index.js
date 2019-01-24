@@ -188,10 +188,11 @@ function convertArrayToCSV(arr){
 	arr.forEach(function(rowArr,index){
 		let row = rowArr.join(",");
 		lineArray.push(index == 0 ? "data:text/csv;charset=utf-8," + row:row);	
+		//lineArray.push(row);
 	});
 	let csvContent = lineArray.join("\n");
 	let encodedUri = encodeURI(csvContent);
-	//console.log(csvContent);
+	console.log(csvContent);
 	return encodedUri
 }
 
@@ -494,8 +495,10 @@ function fixCryeItemCodes(splitArr){
 //Used to actually convert item name to handle
 function convertToHandle(productName){
 	let handleName = productName.replace(/\s|\(|\)|,|\"|\'|%|\+|&|\/|\\|\.|\:|\*|\–/g,"-");
+	handleName = handleName.replace(/(™|®|©|&trade;|&reg;|&copy;|&#8482;|&#174;|&#169;|\u00ae|\u00a9|\u2122)/g, "");
 	//need this to handle long dash
 	handleName = handleName.replace(/\u2013|\u2014/g, "-");
+
 	handleName = handleName.split("");
 	let finalHandleName = [];
 
@@ -594,12 +597,6 @@ function filterByItemCodes(splitArr){
 	}
 
 	return newArr;
-}
-
-function formatString(fileString){	
-	let fileArray = fileString.split(",");
-	//console.log("in function: ", fileString);
-	//console.log(fileArray[24].trim());
 }
 
 function removeSkipBy(skipObject,splitArr){
@@ -703,7 +700,7 @@ function splitArray(newlineArray){
 			chunkStr += character;
 			//console.log(newlineArray.charAt(i));
 		}
-
+		//console.log(chunkArray);
 		returnArray.push(chunkArray);
 	}
 	console.log("done splitting");
@@ -725,7 +722,7 @@ function readFile(files, type) {
 	 
 	    	let commaSplitArray = splitArray(fileArrayByNewLines);
 	    	addBlank(commaSplitArray);
-	    	//console.log(commaSplitArray);
+	    	console.log(commaSplitArray);
 	    	verifyLength(commaSplitArray);
 
 	    	let removedSplitArray = removeForPurchase(commaSplitArray);
@@ -756,7 +753,8 @@ function readFile(files, type) {
 	    	convertCSV(removedSkipArray);
 	    	fixQuotes(shopifyDataArray);
 	    	removeExtraQuote(shopifyDataArray);
-	    	let shopifyCSV = convertArrayToCSV(shopifyDataArray);    	
+	    	let shopifyCSV = convertArrayToCSV(shopifyDataArray);
+	    	checkForNewLine(shopifyDataArray);  	
 	    	let downloadLink = document.getElementById("downloadLink");
 	    	downloadLink.classList.remove("hide");
 	    	downloadLink.setAttribute("href",shopifyCSV);

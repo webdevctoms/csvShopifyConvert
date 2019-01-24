@@ -70,3 +70,15 @@ function verifyArrayLengths(arr1,arr2){
 	
 	else console.log("Test failed both arrays not same length");
 }
+
+function checkForNewLine(arr){
+	const newlines = /\n|\r\n/;
+	console.log("testing for new lines");
+	for(let i = 0;i < arr.length;i++){
+		for(let k =0;k<arr[i].length;k++){
+			if(newlines.test(arr[i][k])){
+				console.log("newline found: ",i,k);
+			}
+		}
+	}
+}
