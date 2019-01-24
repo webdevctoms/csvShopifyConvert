@@ -36,6 +36,7 @@ let variantOptions = {
 		OD:"Olive Drab",
 		SD:"Sand",
 		RD:"Red",
+		NT:"Natural",
 		Black:"Black",
 		Grey:"Grey",
 		Olive:"Olive",
@@ -102,7 +103,7 @@ let variantOptions = {
 		XLL: "X-Long"
 	},
 	Mount:{
-		BM:"Belt Mount",
+		BTM:"Belt Mount",
 		MM:"MOLLE Mount"
 	},
 	"Hat Size":{
@@ -123,11 +124,11 @@ let variantOptions = {
 		"0":'3" x 12"',
 		"1":'4" x 15"',
 		"2":'4" x 30"',
-		"3":'5" x 30"'
+		"5":'5" x 30"'
 	},
 	"Collar Color":{
 		CL:"Clear",
-		MIL:"Military,OD"
+		MIL:"Military OD"
 	},
 	"NPA Sizes":{
 		"20N":"20 FR",
@@ -142,6 +143,25 @@ let variantOptions = {
 	"Needle Gauge":{
 		"10":"10 G x 3.25 inch",
 		"14":"14 G x 3.25 inch"
+	},
+	"Screw Length":{
+		"10CM":"10 CM",
+		"13CM":"13 CM",
+		"16CM": "16 CM",
+		"19CM": "19 CM",
+		"22CM": "22 CM"
+	},
+	"Foam Option":{
+		"PC1":"Precut Foam Option 1",
+		"PC2":"Precut Foam Option 2",
+		"UC": "Uncut Foam"
+	},
+	"Rope Sizes 6mm X":{
+		"6/30":"x 30 m",
+		"6/46":"x 46 m",
+		"6/60": "x 60 m",
+		"6/76":"x 76 m",
+		"6/110":"x 110 m",
 	}
 };
 
@@ -149,7 +169,8 @@ let variantOptions = {
 const skipType = {
 	DMM:"DMM",
 	P:"P",
-	"P (OTC case as ordered from CustomFab. Nylon kit part)":"P (OTC case as ordered from CustomFab. Nylon kit part)"
+	"P (OTC case as ordered from CustomFab. Nylon kit part)":"P (OTC case as ordered from CustomFab. Nylon kit part)",
+	WEB:"WEB"
 };
 
 
@@ -161,6 +182,19 @@ let shopifyDataArray = [];
 //to get options need to split item code loop through them and loop through keys of variants then see if that variant[key][item] exists and that item code === the last one item code that didnt have a -
 //will need to capture each single item code and then compare t0 item code that can be split
 //also need a crye check to add C to MC,BK, RG,GY,NV
+function convertArrayToCSV(arr){
+	
+	let lineArray = [];
+	arr.forEach(function(rowArr,index){
+		let row = rowArr.join(",");
+		lineArray.push(index == 0 ? "data:text/csv;charset=utf-8," + row:row);	
+	});
+	let csvContent = lineArray.join("\n");
+	let encodedUri = encodeURI(csvContent);
+	//console.log(csvContent);
+	return encodedUri
+}
+
 function checkVariant(splitCode){
 	let variantData = {
 		optionName:[],
@@ -228,11 +262,11 @@ function isNaso(description,splitItem){
 	}
 }
 
-
+/*
 function findVariants(splitCode){
 	let variantArr = [];
 
-	splitCode.forEach(function(item,index){
+	splitCode.forEach(function(item){
 		for(let key in variantOptions){
 
 			if(variantOptions[key][item]){
@@ -243,7 +277,7 @@ function findVariants(splitCode){
 
 	return variantArr;
 }
-
+*/
 function convertCSV(filteredArr){
 	//the handle which applies to variants
 	let prevItemCode = "";
@@ -319,6 +353,17 @@ function convertCSV(filteredArr){
 				continue;
 			}
 			if(foundVariant){
+				if(!cryeColorUpdated){
+					isCrye(filteredArr[i][5],splitItemCode);
+					//console.log("modified crye color: ", splitItemCode);
+					cryeColorUpdated = true;
+				}
+
+				if(!nasoUpdated){
+					isNaso(filteredArr[i][3],splitItemCode);
+					//console.log("modified crye color: ", splitItemCode);
+					nasoUpdated = true;
+				}
 				let variantData = checkVariant(splitItemCode);
 				//update the parent of the variant option with the option names
 				//can't have sku and price for parent
@@ -339,26 +384,17 @@ function convertCSV(filteredArr){
 					variantsUpdated = true;
 
 				}
-				if(!cryeColorUpdated){
-					isCrye(filteredArr[i][5],splitItemCode);
-					//console.log("modified crye color: ", splitItemCode);
-					cryeColorUpdated = true;
-				}
-
-				if(!nasoUpdated){
-					isNaso(filteredArr[i][3],splitItemCode);
-					//console.log("modified crye color: ", splitItemCode);
-					nasoUpdated = true;
-				}
+				
 
 				if(!variantValuesUpdated){
-					let variantArray = findVariants(splitItemCode);
+					//let variantArray = findVariants(splitItemCode);
 					//console.log(variantArray);
 					let variantValIndex = 0;
-					variantArray.forEach(function(varaintVal){
+					variantData.optionValue.forEach(function(varaintVal){
 						shopifyDataArray[i][variantValueIndexes[variantValIndex]] = varaintVal;
 						variantValIndex++;
 					});
+					shopifyDataArray[i][1] = "";
 					variantValuesUpdated = true;
 				}
 				
@@ -378,6 +414,34 @@ function preBuildShopifyArray(filteredArr){
 			shopifyRow.push("");
 		}
 		shopifyDataArray.push(shopifyRow);
+	}
+}
+
+function removeExtraQuote(splitArr){
+	for(let i = 0;i < splitArr.length;i++){
+		for(let k = 0;k < splitArr[i].length;k++){
+			let foundStartQuote = false;
+			let splitString = splitArr[i][k].split("");
+			if(splitString[0] === '"' && splitString[splitString.length - 1] === '"' && splitString[splitString.length - 2] === '"'){
+				splitString.pop();
+				let quoteFixString = splitString.join("");
+				splitArr[i][k] = quoteFixString;
+			}
+		}
+	}
+}
+
+function fixQuotes(splitArr){
+
+	for(let i = 0;i < splitArr.length;i++){
+		for(let k = 0;k < splitArr[i].length;k++){
+			let splitString = splitArr[i][k].split("");
+			if(splitString[0] === '"' && splitString[splitString.length - 1] !== '"'){
+				splitString.push('"');
+				let quoteFixString = splitString.join("");
+				splitArr[i][k] = quoteFixString;
+			}
+		}
 	}
 }
 
@@ -690,6 +754,13 @@ function readFile(files, type) {
 	    	formatImageStrings(removedSkipArray);
 	    	convertToGrams(removedSkipArray);
 	    	convertCSV(removedSkipArray);
+	    	fixQuotes(shopifyDataArray);
+	    	removeExtraQuote(shopifyDataArray);
+	    	let shopifyCSV = convertArrayToCSV(shopifyDataArray);    	
+	    	let downloadLink = document.getElementById("downloadLink");
+	    	downloadLink.classList.remove("hide");
+	    	downloadLink.setAttribute("href",shopifyCSV);
+	    	downloadLink.setAttribute("download", "shopify_data.csv");
     	}
     	else if(type === "submit"){
     		let fileString = event.target.result; 
